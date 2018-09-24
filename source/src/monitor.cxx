@@ -10,36 +10,40 @@
 #include <TString.h>
 
 TTree* latest(){
-
+	int verboseLevel = 0;
 	TString dir = "/home/candles/np1c/CANUG/PreAnalysis/Official_Run010/";
 	const int Run = 10;
-	const int maxSRun = 800;
-	const int maxSsRun = 30;
+	const int maxSRun = 999;
+	const int maxSsRun = 50;
+
+	TString lsFile = gSystem->GetFromPipe("ls "+ dir);
+	if(verboseLevel>3) std::cout << lsFile << std::endl;
 
 	for (int sRun=maxSRun;sRun>0;--sRun){
 		for (int ssRun=maxSsRun;ssRun>0;--ssRun){
 			TString RunNum = Form("Run%03d-%03d-%03d",Run,sRun,ssRun);
 
 			TString ifn = dir + RunNum + ".root";
-			TString qstat = gSystem->GetFromPipe("qstat|grep CM");
 
-			FileStat_t info;
-
-			if (gSystem->GetPathInfo(ifn.Data(), info)!=0) {
+			if ( lsFile.Index(RunNum)==-1) {
 				//File not exist
-				std::cout <<RunNum<<std::endl;
-				std::cout << "file does not exist." << std::endl;
-			} else if( qstat.Index(RunNum)!=-1 ){
+				if(verboseLevel>2) std::cout << RunNum << std::endl;
+				if(verboseLevel>2) std::cout << "file does not exist." << std::endl;
+				continue;
+			} 
+
+			TString qstat = gSystem->GetFromPipe("qstat|grep CM");
+		  	if( qstat.Index(RunNum)!=-1 ){
 				//File is creating
-				std::cout <<RunNum<<std::endl;
-				std::cout << "file is creating now" << std::endl;
-			} else {
-				//File exists
-				std::cout <<RunNum<<std::endl;
-				TFile *fin = new TFile(ifn.Data(), "read");
-				TTree* t = dynamic_cast<TTree*>(fin->Get("tree"));
-				return t;
+				if(verboseLevel>2) std::cout << RunNum << std::endl;
+				if(verboseLevel>2) std::cout << "file is creating now" << std::endl;
+				continue;
 			}
+
+			if(verboseLevel>1) std::cout << RunNum << std::endl;
+			TFile *fin = new TFile(ifn.Data(), "read");
+			TTree* t = dynamic_cast<TTree*>(fin->Get("tree"));
+			return t;
 		}
 	}
 }

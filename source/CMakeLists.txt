@@ -8,14 +8,24 @@ project(monitor)
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
-find_package(ROOT REQUIRED COMPONENTS MathCore RIO Net Hist Tree Minuit)
+find_package(ROOT REQUIRED COMPONENTS MathCore RIO Net Hist Tree Minuit Gui)
 
 #---Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
 include(${ROOT_USE_FILE})
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
+#ROOT_GENERATE_DICTIONARY(G__Event Event.h LINKDEF EventLinkDef.h)
 
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cxx)
+#---Create a shared library with geneated dictionary
+#add_library(Event SHARED Event.cxx G__Event.cxx)
+#target_link_libraries(Event ${ROOT_LIBRARIES})
+
+#---Create  a main program using the library
+#add_executable(Main MainEvent.cxx)
+#target_link_libraries(Main Event)
+
+
+file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cpp)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
 add_definitions(${ROOT_CXX_FLAGS})
@@ -23,8 +33,5 @@ add_executable(monitor src/monitor.cxx ${sources} ${headers})
 target_link_libraries(monitor ${ROOT_LIBRARIES})
 
 set(CMAKE_INSTALL_PREFIX "..")
-# set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0 -pg -Wall -Wextra")
-
 add_custom_target(MONITOR DEPENDS monitor)
 install(TARGETS monitor DESTINATION bin)

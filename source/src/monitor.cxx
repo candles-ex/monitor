@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TString.h>
+#include <TCanvas.h>
 
 TTree* latest(){
 	int verboseLevel = 0;
@@ -49,7 +50,28 @@ TTree* latest(){
 }
 
 int main(){
+
 	TTree* t = latest();
-	std::cout << t->GetEntries() << std::endl;
+
+	TCanvas* C = new TCanvas("c1","c1",600,400);
+	C->Divide(3,2);
+	C->cd(1);
+	t->Draw("ADCTotal4us>>h1(100,0,200000)");
+
+	C->cd(2);
+	t->Draw("Pedestal[63]>>h2(90,225,255)");
+
+	C->cd(3);
+	t->Draw("Pedestal[64]>>h3(90,225,255)");
+
+	C->cd(4);
+	t->Draw("Pedestal[0]:Header[1]");
+
+	C->cd(5);
+
+
+	C->cd(6);
+
+	C->SaveAs("latest.pdf");
 	return 0;
 }
